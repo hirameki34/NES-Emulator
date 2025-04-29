@@ -1,4 +1,3 @@
-use crate::cpu::AddressingMode;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
@@ -8,6 +7,20 @@ pub struct OpCode {
     pub len: u8,
     pub cycles: u8,
     pub mode: AddressingMode,
+}
+
+#[derive(Debug)]
+pub enum AddressingMode {
+    Immediate,
+    ZeroPage,
+    ZeroPageX,
+    ZeroPageY,
+    Absolute,
+    AbsoluteX,
+    AbsoluteY,
+    IndirectX,
+    IndirectY,
+    NoneAddressing,
 }
 
 impl OpCode {

@@ -120,17 +120,8 @@ impl CPU {
     }
 
     fn update_zero_and_negative_flags(&mut self, result: u8) {
-        if result == 0 {
-            self.status.insert(CpuFlags::ZERO);
-        } else {
-            self.status.remove(CpuFlags::ZERO);
-        }
-
-        if result & 0b1000_0000 != 0 {
-            self.status.insert(CpuFlags::NEGATIV);
-        } else {
-            self.status.remove(CpuFlags::NEGATIV);
-        }
+        self.status.set(CpuFlags::ZERO, result == 0);
+        self.status.set(CpuFlags::NEGATIV, result & 0b1000_0000 != 0);
     }
 
     fn mem_read(&self, addr: u16) -> u8 {
@@ -199,24 +190,24 @@ mod test {
         let mut cpu = CPU::new();
         cpu.load_and_run(vec![0xa9, 0x05, 0x00]); // LDA 0x05 BRK
         assert_eq!(cpu.register_a, 0x05);
-        assert_eq!(cpu.status.bits() & 0b0000_0010, 0b00);
-        assert_eq!(cpu.status.bits() & 0b1000_0000, 0);
+        assert!(!cpu.status.contains(CpuFlags::ZERO));
+        assert!(!cpu.status.contains(CpuFlags::NEGATIV));
     }
 
     #[test]
     fn test_0xa9_lda_zero_flag() {
         let mut cpu = CPU::new();
         cpu.load_and_run(vec![0xa9, 0x00, 0x00]);
-        assert_eq!(cpu.status.bits() & 0b0000_0010, 0b10);
-        assert_eq!(cpu.status.bits() & 0b1000_0000, 0);
+        assert!(cpu.status.contains(CpuFlags::ZERO));
+        assert!(!cpu.status.contains(CpuFlags::NEGATIV));
     }
 
     #[test]
     fn test_0xa9_lda_negative_flag() {
         let mut cpu = CPU::new();
         cpu.load_and_run(vec![0xa9, 0b1000_0001, 0x00]);
-        assert_eq!(cpu.status.bits() & 0b0000_0010, 0b00);
-        assert_eq!(cpu.status.bits() & 0b1000_0000, 0b1000_0000);
+        assert!(!cpu.status.contains(CpuFlags::ZERO));
+        assert!(cpu.status.contains(CpuFlags::NEGATIV));
     }
 
     #[test]
